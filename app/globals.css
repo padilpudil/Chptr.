@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #fff8f5; /* Warm Cream Parchment */
+    --foreground: #2d2926; /* Dark Charcoal text */
+  }
+
+  .dark {
+    --background: #0b0f19; /* Cleaner, smoother dark slate-blue instead of #130a0b */
+    --foreground: #f9f0eb; /* Warm Cream text */
+  }
+
+  body {
+    background-color: var(--background);
+    background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    background-attachment: fixed;
+    @apply text-slate-700 dark:text-slate-200 transition-colors duration-300;
+  }
+
+  .dark body {
+    background-image: none;
+  }
+
+  .dark select option {
+    background-color: #111625;
+    color: #e9dcd3;
+  }
+
+  /* Make headings default to Playfair Serif */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-slate-800 dark:text-slate-100;
+  }
+}
+
+/* Custom Editorial Classes */
+.gold-border {
+  border-color: #C5A059;
+}
+
+.text-gold {
+  color: #C5A059;
+}
+
+.decoration-gold {
+  text-decoration-color: #C5A059;
+}
+
+.hairline-separator {
+  height: 1px;
+  background-color: #C5A059;
+  opacity: 0.3;
+}
+
+.fleuron::after {
+  content: "❖";
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #C5A059;
+  margin: 0 1rem;
+}
+
+.chip-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.chip-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background-color: #C5A059;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-50 dark:bg-slate-850;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-750 rounded-full hover:bg-slate-300 dark:hover:bg-slate-650;
+}
+
+/* Tiptap Editor Styles */
+.ProseMirror {
+  @apply font-serif text-slate-800 dark:text-slate-100 text-base sm:text-lg leading-relaxed;
+  outline: none;
+  min-height: 250px;
+}
+
+.ProseMirror p {
+  @apply mb-4 leading-relaxed;
+}
+
+.ProseMirror h1 {
+  @apply text-3xl font-bold mb-6 mt-8 font-serif text-purple-655 dark:text-purple-400;
+}
+
+.ProseMirror h2 {
+  @apply text-2xl font-bold mb-4 mt-6 font-serif text-purple-655 dark:text-purple-400;
+}
+
+.ProseMirror h3 {
+  @apply text-xl font-bold mb-3 mt-4 font-serif text-purple-655 dark:text-purple-400;
+}
+
+.ProseMirror blockquote {
+  @apply pl-4 border-l-4 border-indigo-500 italic my-6 text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-800/30 py-2 pr-3 rounded-r-xl;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-6 mb-4 space-y-2;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-6 mb-4 space-y-2;
+}
+
+.ProseMirror hr {
+  @apply border-slate-200 dark:border-slate-800 my-8;
+}
+
+/* Reading Progress Bar Customization */
+.reading-progress-bar {
+  transition: width 0.1s ease-out;
+}
