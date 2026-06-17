@@ -25,6 +25,24 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const errorParam = searchParams.get("error");
+
+  useEffect(() => {
+    if (errorParam) {
+      if (errorParam === "OAuthAccountNotLinked") {
+        setError("An account with this email already exists. Please log in using your username/email and password.");
+        toast.error("Account linking blocked for security.");
+      } else if (errorParam === "AccessDenied" || errorParam === "CallbackRouteError" || errorParam === "OAuthCallbackError") {
+        setError("Google sign-in was cancelled or access was denied. Please try again.");
+        toast.error("Login cancelled.");
+      } else if (errorParam === "Configuration") {
+        setError("A system configuration error occurred. Please contact the administrator.");
+      } else {
+        setError("An authentication error occurred. Please try again.");
+      }
+    }
+  }, [errorParam]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier || !password) {
