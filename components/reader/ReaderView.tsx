@@ -449,7 +449,7 @@ export default function ReaderView({
 
       {/* Reader Control Header */}
       <header
-        className={`fixed top-1 left-0 right-0 z-40 backdrop-blur-md border-b py-3 transition-all duration-300 ${headerThemeClasses} ${
+        className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b py-3 transition-all duration-300 ${headerThemeClasses} ${
           headerVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >

@@ -101,6 +101,9 @@ export default function Navbar() {
     await signOut({ callbackUrl: "/" });
   };
 
+  const isReaderPage = /^\/works\/[^/]+\/chapters\/[^/]+$/.test(pathname);
+  if (isReaderPage) return null;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-indigo-500/20 bg-slate-50/85 dark:bg-slate-950/85 backdrop-blur-md transition-colors duration-300">
       <div className="max-w-[94%] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">

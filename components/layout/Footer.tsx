@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isReaderPage = /^\/works\/[^/]+\/chapters\/[^/]+$/.test(pathname);
+  if (isReaderPage) return null;
   return (
     <footer className="border-t border-indigo-500/20 bg-slate-100/60 dark:bg-slate-950/60 text-slate-550 dark:text-slate-400 py-12 transition-colors duration-300">
       <div className="max-w-[94%] mx-auto px-4 sm:px-6 lg:px-8">
