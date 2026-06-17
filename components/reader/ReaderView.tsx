@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import ReaderSettings, { ReaderConfig } from "./ReaderSettings";
 import ChapterNav from "./ChapterNav";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, X, Languages, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, X, Languages, Loader2, ChevronDown } from "lucide-react";
 import CommentSection from "@/components/community/CommentSection";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 interface Chapter {
   id: string;
@@ -143,7 +144,7 @@ export default function ReaderView({
   const [popover, setPopover] = useState<{ show: boolean; top: number; left: number; text: string } | null>(null);
   const [headerVisible, setHeaderVisible] = useState(true);
 
-  // Translation state
+  // Translation states
   const [activeLanguage, setActiveLanguage] = useState<string>("original");
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
   const [translationsCache, setTranslationsCache] = useState<Record<string, {
@@ -152,12 +153,78 @@ export default function ReaderView({
     content: string;
     afterword?: string;
   }>>({});
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+
+  // Text Selection / Inline Translate states
+  const [selectedText, setSelectedText] = useState("");
+  const [selectionCoords, setSelectionCoords] = useState<{ top: number; left: number } | null>(null);
+  const [showSelectionPopover, setShowSelectionPopover] = useState(false);
+  const [popoverPlacement, setPopoverPlacement] = useState<"top" | "bottom">("top");
+  const [selectionResult, setSelectionResult] = useState<{
+    translation: string;
+    definitions: Array<{ partOfSpeech: string; definitions: string[] }>;
+    detectedSource?: string;
+  } | null>(null);
+  const [loadingSelection, setLoadingSelection] = useState(false);
 
   // Reset translation language and clear cache when chapter changes
   useEffect(() => {
     setActiveLanguage("original");
     setTranslationsCache({});
+    setShowSelectionPopover(false);
+    setSelectionResult(null);
   }, [currentChapter.id]);
+
+  // Selection change listener for inline translation
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const text = selection.toString().trim();
+      if (!text) return;
+
+      // Ensure highlight is inside story container
+      try {
+        const range = selection.getRangeAt(0);
+        const container = document.querySelector(".story-body");
+        if (container && container.contains(range.commonAncestorContainer)) {
+          const rect = range.getBoundingClientRect();
+          const isTooCloseToTop = rect.top < 150;
+          const top = isTooCloseToTop
+            ? rect.bottom + window.scrollY + 8
+            : rect.top + window.scrollY - 8;
+          const left = rect.left + window.scrollX + rect.width / 2;
+
+          setSelectedText(text);
+          setSelectionCoords({ top, left });
+          setPopoverPlacement(isTooCloseToTop ? "bottom" : "top");
+          setShowSelectionPopover(true);
+          setSelectionResult(null);
+        }
+      } catch (e) {
+        // Range selection error safe guard
+      }
+    };
+
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".selection-popover") && !window.getSelection()?.toString().trim()) {
+        setShowSelectionPopover(false);
+        setSelectionResult(null);
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    document.addEventListener("mousedown", handleDocumentClick);
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
+  }, []);
 
   const handleTranslate = async (lang: string) => {
     if (lang === "original") {
@@ -236,9 +303,33 @@ export default function ReaderView({
       setActiveLanguage(lang);
     } catch (error) {
       console.error("Translation failed:", error);
-      alert("Translation failed. Please try again later.");
+      toast.error("Whole-chapter translation failed. Please try again later.");
     } finally {
       setIsTranslating(false);
+    }
+  };
+
+  const handleTranslateSelection = async () => {
+    if (!selectedText) return;
+    setLoadingSelection(true);
+    try {
+      const res = await fetch("/api/define", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: selectedText,
+          target: activeLanguage !== "original" ? activeLanguage : "en",
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to translate/define");
+      const data = await res.json();
+      setSelectionResult(data);
+    } catch (err) {
+      console.error("Translate selection error:", err);
+      toast.error("Failed to translate or define selection.");
+    } finally {
+      setLoadingSelection(false);
     }
   };
 
@@ -472,7 +563,7 @@ export default function ReaderView({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Translation Dropdown */}
+            {/* Custom Translation Dropdown */}
             <div className="relative inline-block text-left">
               {isTranslating ? (
                 <div className="flex items-center gap-1.5 py-2 px-3 border border-indigo-500/30 text-slate-400 rounded-none text-xs font-bold uppercase tracking-widest bg-transparent">
@@ -480,25 +571,45 @@ export default function ReaderView({
                   <span className="hidden xs:inline text-[10px]">Translating...</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 bg-transparent border border-indigo-500 py-1.5 px-2.5 text-purple-655 dark:text-purple-400 hover:bg-slate-200/50 rounded-none transition shadow-sm">
-                  <Languages className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                  <select
-                    value={activeLanguage}
-                    onChange={(e) => handleTranslate(e.target.value)}
-                    className="bg-transparent text-[10px] font-bold uppercase tracking-widest outline-none border-none cursor-pointer pr-1 py-0.5 text-purple-655 dark:text-purple-400"
-                    style={{ WebkitAppearance: "none", MozAppearance: "none", appearance: "none" }}
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                    className="flex items-center gap-1.5 bg-transparent border border-indigo-500 py-2 px-3 text-purple-655 dark:text-purple-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/40 rounded-none transition shadow-sm text-[10px] font-bold uppercase tracking-widest"
                   >
-                    {LANGUAGES.map((lang) => (
-                      <option
-                        key={lang.code}
-                        value={lang.code}
-                        className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 uppercase font-sans font-normal"
-                      >
-                        {lang.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    <Languages className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                    <span>{LANGUAGES.find(l => l.code === activeLanguage)?.name || "Translate"}</span>
+                    <ChevronDown className="w-3 h-3 text-indigo-500 shrink-0 ml-0.5" />
+                  </button>
+
+                  {langDropdownOpen && (
+                    <>
+                      {/* Close overlay */}
+                      <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setLangDropdownOpen(false)}></div>
+                      
+                      {/* Dropdown Menu */}
+                      <div className="absolute right-0 mt-1.5 w-44 bg-slate-50 dark:bg-slate-900 border border-indigo-500 shadow-xl z-50 rounded-none overflow-hidden max-h-64 overflow-y-auto divide-y divide-indigo-500/10 animate-in fade-in duration-150">
+                        {LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.code}
+                            type="button"
+                            onClick={() => {
+                              handleTranslate(lang.code);
+                              setLangDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                              activeLanguage === lang.code
+                                ? "bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 font-bold"
+                                : "text-slate-700 dark:text-slate-350 hover:bg-indigo-500/5 hover:text-indigo-500"
+                            }`}
+                          >
+                            {lang.name}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
               )}
             </div>
 
@@ -600,6 +711,94 @@ export default function ReaderView({
           <p className="text-xs font-serif italic text-slate-700 dark:text-slate-300 leading-relaxed">
             &ldquo;{popover.text}&rdquo;
           </p>
+        </div>
+      )}
+
+      {/* Floating Text Selection Popup */}
+      {showSelectionPopover && selectionCoords && (
+        <div
+          style={{
+            top: `${selectionCoords.top}px`,
+            left: `${selectionCoords.left}px`,
+            transform: popoverPlacement === "top" ? "translate(-50%, -100%)" : "translate(-50%, 0)",
+          }}
+          className="selection-popover absolute z-50 w-72 bg-slate-50 dark:bg-slate-900 border border-indigo-500 shadow-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-200 text-left rounded-none"
+        >
+          {/* Header */}
+          <div className="flex justify-between items-center pb-2 border-b border-indigo-500/10 mb-2.5">
+            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
+              Selection Tool
+            </span>
+            <button
+              onClick={() => {
+                setShowSelectionPopover(false);
+                setSelectionResult(null);
+              }}
+              className="text-slate-400 hover:text-slate-655 dark:hover:text-slate-200 transition"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <p className="text-xs font-serif italic font-semibold text-slate-800 dark:text-slate-250 mb-3 truncate">
+            &ldquo;{selectedText}&rdquo;
+          </p>
+
+          {!selectionResult && !loadingSelection && (
+            <button
+              type="button"
+              onClick={handleTranslateSelection}
+              className="w-full py-2.5 bg-purple-655 hover:bg-purple-550 border border-indigo-500 text-white font-bold text-[10px] uppercase tracking-widest transition shadow-sm rounded-none flex items-center justify-center gap-1.5"
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span>Translate &amp; Define</span>
+            </button>
+          )}
+
+          {loadingSelection && (
+            <div className="flex items-center justify-center py-4 text-slate-450 dark:text-slate-400 text-xs">
+              <Loader2 className="w-4 h-4 animate-spin text-indigo-500 mr-2" />
+              <span>Loading translation...</span>
+            </div>
+          )}
+
+          {selectionResult && (
+            <div className="space-y-3 animate-in fade-in duration-200">
+              {/* Translation Block */}
+              <div className="bg-indigo-500/5 p-2.5 border border-indigo-500/20 rounded-none">
+                <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest block mb-0.5">
+                  Translation
+                </span>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 font-serif">
+                  {selectionResult.translation}
+                </p>
+              </div>
+
+              {/* Dictionary definitions Block */}
+              {selectionResult.definitions && selectionResult.definitions.length > 0 ? (
+                <div className="max-h-36 overflow-y-auto space-y-2.5 pr-1 divide-y divide-indigo-500/10">
+                  {selectionResult.definitions.map((defGroup, idx) => (
+                    <div key={idx} className={idx > 0 ? "pt-2" : ""}>
+                      <span className="text-[9px] font-bold text-purple-655 dark:text-purple-400 uppercase tracking-widest italic block mb-1">
+                        {defGroup.partOfSpeech}
+                      </span>
+                      <ul className="list-disc pl-3.5 space-y-1">
+                        {defGroup.definitions.map((def, dIdx) => (
+                          <li key={dIdx} className="text-xs text-slate-655 dark:text-slate-350 leading-relaxed font-body-serif">
+                            {def}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-400 italic font-body-serif text-center py-1">
+                  No dictionary definitions found.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

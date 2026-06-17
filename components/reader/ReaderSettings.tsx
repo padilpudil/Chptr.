@@ -58,17 +58,17 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
               <div className="space-y-8">
                 {/* Font Family */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
                     Font Family
                   </label>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <button
                       type="button"
                       onClick={() => updateConfig("fontFamily", "serif")}
-                      className={`py-2 px-3 border rounded-none font-serif text-center transition ${
+                      className={`py-3 px-3 border rounded-none font-serif text-center transition-all ${
                         config.fontFamily === "serif"
-                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold"
-                          : "border-indigo-500/20 text-slate-700 dark:text-slate-350 hover:bg-slate-200/50"
+                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                          : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
                       }`}
                     >
                       Source Serif
@@ -76,10 +76,10 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
                     <button
                       type="button"
                       onClick={() => updateConfig("fontFamily", "sans")}
-                      className={`py-2 px-3 border rounded-none font-sans text-center transition ${
+                      className={`py-3 px-3 border rounded-none font-sans text-center transition-all ${
                         config.fontFamily === "sans"
-                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold"
-                          : "border-indigo-500/20 text-slate-700 dark:text-slate-350 hover:bg-slate-200/50"
+                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                          : "border-indigo-500/15 text-slate-700 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
                       }`}
                     >
                       Source Sans
@@ -89,83 +89,68 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
 
                 {/* Font Size */}
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
                     <span>Font Size</span>
                     <span className="text-indigo-500 font-serif font-bold">{config.fontSize}px</span>
                   </div>
-                  <div className="flex items-center gap-3 bg-slate-200/55 dark:bg-slate-950 p-1">
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("fontSize", 16)}
-                      className={`flex-1 py-1.5 text-xs font-semibold text-center transition ${
-                        config.fontSize === 16 ? "bg-slate-50 dark:bg-slate-900 shadow-sm border border-indigo-500/30 font-bold" : "hover:text-indigo-500"
-                      }`}
-                    >
-                      Small
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("fontSize", 20)}
-                      className={`flex-1 py-1.5 text-xs font-semibold text-center transition ${
-                        config.fontSize === 20 ? "bg-slate-50 dark:bg-slate-900 shadow-sm border border-indigo-500/30 font-bold" : "hover:text-indigo-500"
-                      }`}
-                    >
-                      Medium
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("fontSize", 24)}
-                      className={`flex-1 py-1.5 text-xs font-semibold text-center transition ${
-                        config.fontSize === 24 ? "bg-slate-50 dark:bg-slate-900 shadow-sm border border-indigo-500/30 font-bold" : "hover:text-indigo-500"
-                      }`}
-                    >
-                      Large
-                    </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([16, 20, 24] as const).map((sz) => {
+                      const label = sz === 16 ? "Small" : sz === 20 ? "Medium" : "Large";
+                      const isActive = config.fontSize === sz;
+                      return (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => updateConfig("fontSize", sz)}
+                          className={`py-2.5 px-1 text-xs text-center border rounded-none transition-all ${
+                            isActive
+                              ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                              : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Themes */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
                     Color Theme
                   </label>
                   <div className="grid grid-cols-3 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("theme", "cream")}
-                      className="group flex flex-col items-center gap-2"
-                    >
-                      <div className={`w-10 h-10 rounded-full bg-[#fdfbf7] border transition-transform group-hover:scale-105 ${
-                        config.theme === "cream" ? "border-2 border-indigo-500 scale-105" : "border-slate-300 dark:border-slate-800"
-                      }`} />
-                      <span className="text-[11px] font-bold tracking-wider uppercase">CREAM</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("theme", "sepia")}
-                      className="group flex flex-col items-center gap-2"
-                    >
-                      <div className={`w-10 h-10 rounded-full bg-[#f4ecd8] border transition-transform group-hover:scale-105 ${
-                        config.theme === "sepia" ? "border-2 border-indigo-500 scale-105" : "border-[#d3c2a3]"
-                      }`} />
-                      <span className="text-[11px] font-bold tracking-wider uppercase">SEPIA</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateConfig("theme", "dark")}
-                      className="group flex flex-col items-center gap-2"
-                    >
-                      <div className={`w-10 h-10 rounded-full bg-[#1a1a1a] border transition-transform group-hover:scale-105 ${
-                        config.theme === "dark" ? "border-2 border-indigo-500 scale-105" : "border-slate-700"
-                      }`} />
-                      <span className="text-[11px] font-bold tracking-wider uppercase">DARK</span>
-                    </button>
+                    {(["cream", "sepia", "dark"] as const).map((t) => {
+                      const themeColors = {
+                        cream: "bg-[#fdfbf7] border-[#1a1a1a]/15 text-[#1a1a1a]",
+                        sepia: "bg-[#f4ecd8] border-[#433422]/15 text-[#433422]",
+                        dark: "bg-[#0b0f19] border-[#e9dcd3]/15 text-[#e9dcd3]",
+                      }[t];
+                      const themeLabel = t.toUpperCase();
+                      const isActive = config.theme === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => updateConfig("theme", t)}
+                          className={`flex flex-col items-center justify-center py-3.5 px-2 border rounded-none transition-all shadow-sm ${themeColors} ${
+                            isActive
+                              ? "border-indigo-500 ring-1 ring-indigo-500 font-bold scale-[1.03]"
+                              : "hover:scale-[1.01] hover:border-indigo-500/50"
+                          }`}
+                        >
+                          <span className="text-lg font-serif mb-1">Aa</span>
+                          <span className="text-[10px] font-bold tracking-widest uppercase">{themeLabel}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Line Height */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
                     Line Spacing
                   </label>
                   <div className="grid grid-cols-3 gap-2 text-xs">
@@ -174,13 +159,13 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
                         key={lh}
                         type="button"
                         onClick={() => updateConfig("lineHeight", lh)}
-                        className={`py-1.5 border rounded-none capitalize text-center transition ${
+                        className={`py-2 px-1 border rounded-none capitalize text-center transition-all ${
                           config.lineHeight === lh
-                            ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold"
-                            : "border-indigo-500/20 text-slate-700 dark:text-slate-350 hover:bg-slate-200/50"
+                            ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                            : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
                         }`}
                       >
-                        {lh === "compact" ? "Compact" : lh === "normal" ? "Normal" : "Relaxed"}
+                        {lh}
                       </button>
                     ))}
                   </div>
