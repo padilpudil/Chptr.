@@ -502,12 +502,6 @@ export default function ReaderView({
 
   const fontClass = config.fontFamily === "serif" ? "font-body-serif" : "font-sans";
 
-  const sizeClass = {
-    16: "text-sm sm:text-base",
-    20: "text-base sm:text-lg md:text-xl",
-    24: "text-lg sm:text-xl md:text-2xl",
-  }[config.fontSize] || "text-lg";
-
   const leadingClass = {
     compact: "leading-snug space-y-5",
     normal: "leading-[1.8] space-y-6",
@@ -665,7 +659,8 @@ export default function ReaderView({
             
             <div
               onClick={handleContentClick}
-              className={`story-body mx-auto cursor-pointer reading-content border-b border-indigo-500/10 pb-16 prose prose-slate dark:prose-invert ${customWidthClass} ${customFontClass} ${customAlignClass} ${sizeClass} ${leadingClass} ${isAphorism ? "pt-2 pb-6 text-slate-800 dark:text-slate-200" : ""}`}
+              className={`story-body mx-auto cursor-pointer reading-content border-b border-indigo-500/10 pb-16 prose prose-slate dark:prose-invert ${customWidthClass} ${customFontClass} ${customAlignClass} ${leadingClass} ${isAphorism ? "pt-2 pb-6 text-slate-800 dark:text-slate-200" : ""}`}
+              style={{ fontSize: `${config.fontSize}px` }}
               dangerouslySetInnerHTML={{ __html: displayContent }}
             />
 

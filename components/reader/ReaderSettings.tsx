@@ -11,6 +11,22 @@ export interface ReaderConfig {
   theme: "cream" | "sepia" | "dark";
 }
 
+function LineHeightIcon({ spacing }: { spacing: "compact" | "normal" | "relaxed" }) {
+  const gapClass = {
+    compact: "space-y-[3px]",
+    normal: "space-y-[5px]",
+    relaxed: "space-y-[7px]",
+  }[spacing];
+  
+  return (
+    <div className={`flex flex-col justify-center items-center w-6 h-5 ${gapClass}`}>
+      <div className="w-4.5 h-[1.5px] bg-current opacity-80" />
+      <div className="w-5.5 h-[1.5px] bg-current opacity-80" />
+      <div className="w-4 h-[1.5px] bg-current opacity-80" />
+    </div>
+  );
+}
+
 interface ReaderSettingsProps {
   config: ReaderConfig;
   onChange: (config: ReaderConfig) => void;
@@ -50,7 +66,7 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
                   <Settings className="w-4.5 h-4.5 text-indigo-500" />
                   <span>Appearance</span>
                 </h4>
-                <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" onClick={handleToggle}>
+                <button className="text-slate-400 hover:text-slate-655 dark:hover:text-slate-200 transition" onClick={handleToggle}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -58,66 +74,77 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
               <div className="space-y-8">
                 {/* Font Family */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
                     Font Family
                   </label>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-2 gap-3.5 text-xs">
                     <button
                       type="button"
                       onClick={() => updateConfig("fontFamily", "serif")}
-                      className={`py-3 px-3 border rounded-none font-serif text-center transition-all ${
+                      className={`relative flex flex-col items-center justify-center py-4 px-3 border rounded-none font-serif text-center transition-all duration-300 cursor-pointer ${
                         config.fontFamily === "serif"
-                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold scale-[1.02]"
                           : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
                       }`}
                     >
-                      Source Serif
+                      {config.fontFamily === "serif" && (
+                        <span className="absolute inset-0.5 border border-indigo-500/30 pointer-events-none" />
+                      )}
+                      <span className="text-2xl font-serif mb-1.5">Aa</span>
+                      <span className="text-[9px] font-bold tracking-widest uppercase">Source Serif</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => updateConfig("fontFamily", "sans")}
-                      className={`py-3 px-3 border rounded-none font-sans text-center transition-all ${
+                      className={`relative flex flex-col items-center justify-center py-4 px-3 border rounded-none font-sans text-center transition-all duration-300 cursor-pointer ${
                         config.fontFamily === "sans"
-                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
+                          ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold scale-[1.02]"
                           : "border-indigo-500/15 text-slate-700 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
                       }`}
                     >
-                      Source Sans
+                      {config.fontFamily === "sans" && (
+                        <span className="absolute inset-0.5 border border-indigo-500/30 pointer-events-none" />
+                      )}
+                      <span className="text-2xl font-sans mb-1.5">Aa</span>
+                      <span className="text-[9px] font-bold tracking-widest uppercase">Source Sans</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Font Size */}
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
                     <span>Font Size</span>
-                    <span className="text-indigo-500 font-serif font-bold">{config.fontSize}px</span>
+                    <span className="text-indigo-500 font-serif font-bold text-xs">{config.fontSize}px</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {([16, 20, 24] as const).map((sz) => {
-                      const label = sz === 16 ? "Small" : sz === 20 ? "Medium" : "Large";
-                      const isActive = config.fontSize === sz;
-                      return (
-                        <button
-                          key={sz}
-                          type="button"
-                          onClick={() => updateConfig("fontSize", sz)}
-                          className={`py-2.5 px-1 text-xs text-center border rounded-none transition-all ${
-                            isActive
-                              ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
-                              : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-serif text-slate-400 select-none">A</span>
+                    <div className="flex-1 grid grid-cols-6 border border-indigo-500/20 bg-slate-100/50 dark:bg-slate-800/30 p-1 rounded-none">
+                      {([16, 18, 20, 22, 24, 26] as const).map((sz) => {
+                        const isActive = config.fontSize === sz;
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => updateConfig("fontSize", sz)}
+                            className={`py-1.5 text-xs text-center font-bold transition-all rounded-none ${
+                              isActive
+                                ? "bg-indigo-500 text-white shadow-sm"
+                                : "text-slate-500 dark:text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/5"
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <span className="text-lg font-serif text-slate-450 select-none">A</span>
                   </div>
                 </div>
 
                 {/* Themes */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-indigo-650 dark:text-indigo-400">
                     Color Theme
                   </label>
                   <div className="grid grid-cols-3 gap-3">
@@ -134,14 +161,17 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
                           key={t}
                           type="button"
                           onClick={() => updateConfig("theme", t)}
-                          className={`flex flex-col items-center justify-center py-3.5 px-2 border rounded-none transition-all shadow-sm ${themeColors} ${
+                          className={`relative flex flex-col items-center justify-center py-4 px-2 border rounded-none transition-all duration-300 shadow-sm ${themeColors} ${
                             isActive
-                              ? "border-indigo-500 ring-1 ring-indigo-500 font-bold scale-[1.03]"
+                              ? "border-indigo-500 ring-2 ring-indigo-500/30 scale-[1.03] z-10 shadow-md font-bold"
                               : "hover:scale-[1.01] hover:border-indigo-500/50"
                           }`}
                         >
-                          <span className="text-lg font-serif mb-1">Aa</span>
-                          <span className="text-[10px] font-bold tracking-widest uppercase">{themeLabel}</span>
+                          {isActive && (
+                            <span className="absolute inset-0.5 border border-indigo-500/30 pointer-events-none" />
+                          )}
+                          <span className="text-2xl font-serif mb-1.5">Aa</span>
+                          <span className="text-[9px] font-bold tracking-widest uppercase">{themeLabel}</span>
                         </button>
                       );
                     })}
@@ -150,37 +180,41 @@ export default function ReaderSettings({ config, onChange }: ReaderSettingsProps
 
                 {/* Line Height */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-indigo-655 dark:text-indigo-400">
                     Line Spacing
                   </label>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    {(["compact", "normal", "relaxed"] as const).map((lh) => (
-                      <button
-                        key={lh}
-                        type="button"
-                        onClick={() => updateConfig("lineHeight", lh)}
-                        className={`py-2 px-1 border rounded-none capitalize text-center transition-all ${
-                          config.lineHeight === lh
-                            ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold shadow-sm"
-                            : "border-indigo-500/15 text-slate-655 dark:text-slate-350 hover:border-indigo-500/40 hover:bg-slate-200/20"
-                        }`}
-                      >
-                        {lh}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 gap-3">
+                    {(["compact", "normal", "relaxed"] as const).map((lh) => {
+                      const isActive = config.lineHeight === lh;
+                      return (
+                        <button
+                          key={lh}
+                          type="button"
+                          onClick={() => updateConfig("lineHeight", lh)}
+                          className={`relative flex flex-col items-center justify-center py-3.5 px-2 border rounded-none transition-all duration-300 cursor-pointer ${
+                            isActive
+                              ? "border-indigo-500 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 font-bold scale-[1.02]"
+                              : "border-indigo-500/15 text-slate-500 dark:text-slate-400 hover:border-indigo-500/40 hover:bg-slate-200/20"
+                          }`}
+                        >
+                          {isActive && (
+                            <span className="absolute inset-0.5 border border-indigo-500/30 pointer-events-none" />
+                          )}
+                          <LineHeightIcon spacing={lh} />
+                          <span className="text-[9px] font-bold uppercase tracking-widest mt-2 capitalize">{lh}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-indigo-500/20">
-              <button
-                type="button"
-                onClick={handleToggle}
-                className="w-full py-3 bg-purple-655 hover:bg-purple-550 border border-indigo-500 text-white font-bold rounded-none text-xs uppercase tracking-widest transition"
-              >
-                Save Settings
-              </button>
+            {/* Bottom info indicator since Save button is removed */}
+            <div className="pt-4 border-t border-indigo-500/10 text-center">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                Changes saved automatically
+              </span>
             </div>
           </aside>
         </>
