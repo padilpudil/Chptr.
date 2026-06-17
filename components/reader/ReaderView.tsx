@@ -175,54 +175,60 @@ export default function ReaderView({
     setSelectionResult(null);
   }, [currentChapter.id]);
 
-  // Selection change listener for inline translation
+  // Selection mouseup/touchend listener for inline translation
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (!selection) return;
+    const handleMouseUpOrTouchEnd = () => {
+      // Small timeout to allow the browser selection to finish updating
+      setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection) return;
 
-      const text = selection.toString().trim();
-      if (!text) return;
+        const text = selection.toString().trim();
+        if (!text) return;
 
-      // Ensure highlight is inside story container
-      try {
-        const range = selection.getRangeAt(0);
-        const container = document.querySelector(".story-body");
-        if (container && container.contains(range.commonAncestorContainer)) {
-          const rect = range.getBoundingClientRect();
-          const isTooCloseToTop = rect.top < 150;
-          const top = isTooCloseToTop
-            ? rect.bottom + window.scrollY + 8
-            : rect.top + window.scrollY - 8;
-          const left = rect.left + window.scrollX + rect.width / 2;
+        // Ensure highlight is inside story container
+        try {
+          const range = selection.getRangeAt(0);
+          const container = document.querySelector(".story-body");
+          if (container && container.contains(range.commonAncestorContainer)) {
+            const rect = range.getBoundingClientRect();
+            const isTooCloseToTop = rect.top < 150;
+            const top = isTooCloseToTop
+              ? rect.bottom + window.scrollY + 8
+              : rect.top + window.scrollY - 8;
+            const left = rect.left + window.scrollX + rect.width / 2;
 
-          setSelectedText(text);
-          setSelectionCoords({ top, left });
-          setPopoverPlacement(isTooCloseToTop ? "bottom" : "top");
-          setShowSelectionPopover(true);
-          setSelectionResult(null);
+            setSelectedText(text);
+            setSelectionCoords({ top, left });
+            setPopoverPlacement(isTooCloseToTop ? "bottom" : "top");
+            setShowSelectionPopover(true);
+            setSelectionResult(null);
+          }
+        } catch (e) {
+          // Range selection safe guard
         }
-      } catch (e) {
-        // Range selection error safe guard
-      }
+      }, 50);
     };
 
-    const handleDocumentClick = (e: MouseEvent) => {
+    const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest(".selection-popover") && !window.getSelection()?.toString().trim()) {
+      // Close popover if clicking outside of the popover
+      if (!target.closest(".selection-popover")) {
         setShowSelectionPopover(false);
         setSelectionResult(null);
       }
     };
 
-    document.addEventListener("selectionchange", handleSelectionChange);
-    document.addEventListener("mousedown", handleDocumentClick);
+    document.addEventListener("mouseup", handleMouseUpOrTouchEnd);
+    document.addEventListener("touchend", handleMouseUpOrTouchEnd);
+    document.addEventListener("mousedown", handleMouseDown);
 
     return () => {
-      document.removeEventListener("selectionchange", handleSelectionChange);
-      document.removeEventListener("mousedown", handleDocumentClick);
+      document.removeEventListener("mouseup", handleMouseUpOrTouchEnd);
+      document.removeEventListener("touchend", handleMouseUpOrTouchEnd);
+      document.removeEventListener("mousedown", handleMouseDown);
     };
   }, []);
 
