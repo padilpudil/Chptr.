@@ -450,6 +450,11 @@ export default function ReaderView({
 
   // 3. Handle paragraph clicks to show inline comment popover
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // If the user is currently highlighting/selecting text, do not show the annotation popover
+    if (typeof window !== "undefined" && window.getSelection()?.toString().trim()) {
+      return;
+    }
+
     const target = e.target as HTMLElement;
     const p = target.closest("p");
     if (p && p.textContent && p.textContent.trim().length > 10) {
