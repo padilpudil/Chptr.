@@ -103,6 +103,29 @@ export default function EditWorkPage({ params }: { params: { workId: string } })
     }
   };
 
+  // Delete Work
+  const handleDeleteWork = async () => {
+    if (!confirm("Are you sure you want to permanently delete this story? This action cannot be undone and will delete all chapters, comments, bookmarks, and kudos associated with it.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/works/${workId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to delete story");
+      }
+
+      toast.success("Story successfully deleted!");
+      router.push("/");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete story");
+    }
+  };
+
   // Handle Chapter Submit (Create / Edit)
   const handleChapterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,6 +303,25 @@ export default function EditWorkPage({ params }: { params: { workId: string } })
             loading={false}
             buttonText="Save Changes"
           />
+
+          {/* Danger Zone */}
+          <div className="mt-12 pt-8 border-t border-red-500/20">
+            <h3 className="font-serif text-base font-bold text-red-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <Trash2 className="w-4 h-4 shrink-0" />
+              <span>Danger Zone</span>
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 font-body-serif italic leading-relaxed">
+              Once you delete a story, there is no going back. All chapters, comments, bookmarks, and kudos associated with this story will be permanently removed.
+            </p>
+            <button
+              type="button"
+              onClick={handleDeleteWork}
+              className="inline-flex items-center gap-1.5 py-2.5 px-5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-widest rounded-none border border-red-500 transition shadow"
+            >
+              <Trash2 className="w-4 h-4 shrink-0" />
+              <span>Delete Story Permanently</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
