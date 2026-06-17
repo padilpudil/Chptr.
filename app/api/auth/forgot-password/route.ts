@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     if (resend) {
       try {
         await resend.emails.send({
-          from: "Chptr. Auth <onboarding@resend.dev>",
+          from: "Chptr. Auth <onboarding@chptr.space>",
           to: trimmedEmail,
           subject: "Reset Your Password - Chptr.",
           html: `
